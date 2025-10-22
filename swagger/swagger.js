@@ -234,6 +234,87 @@ const options = {
             }
           }
         },
+        SignatureValidation: {
+          type: 'object',
+          properties: {
+            isValid: {
+              type: 'boolean',
+              description: 'Si la firma es válida'
+            },
+            errors: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Lista de errores encontrados'
+            },
+            warnings: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Lista de advertencias'
+            },
+            certificateStatus: {
+              type: 'string',
+              enum: ['VALID', 'INVALID', 'EXPIRED', 'NOT_YET_VALID', 'REVOKED', 'UNKNOWN', 'ERROR'],
+              description: 'Estado del certificado'
+            },
+            signatureAlgorithm: {
+              type: 'string',
+              description: 'Algoritmo de firma utilizado'
+            },
+            validationTimestamp: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Timestamp de la validación'
+            }
+          }
+        },
+        Certificate: {
+          type: 'object',
+          properties: {
+            nit: {
+              type: 'string',
+              description: 'NIT del emisor'
+            },
+            issuer: {
+              type: 'string',
+              description: 'Emisor del certificado'
+            },
+            subject: {
+              type: 'string',
+              description: 'Sujeto del certificado'
+            },
+            serialNumber: {
+              type: 'string',
+              description: 'Número de serie del certificado'
+            },
+            validFrom: {
+              type: 'string',
+              format: 'date',
+              description: 'Fecha de validez desde'
+            },
+            validTo: {
+              type: 'string',
+              format: 'date',
+              description: 'Fecha de validez hasta'
+            },
+            algorithm: {
+              type: 'string',
+              description: 'Algoritmo de firma'
+            },
+            keySize: {
+              type: 'number',
+              description: 'Tamaño de la clave'
+            },
+            revoked: {
+              type: 'boolean',
+              description: 'Si el certificado está revocado'
+            },
+            revocationDate: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha de revocación'
+            }
+          }
+        },
         Error: {
           type: 'object',
           properties: {

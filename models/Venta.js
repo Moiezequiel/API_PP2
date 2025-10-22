@@ -187,12 +187,6 @@ ventaSchema.methods.procesarStock = async function() {
   }
 };
 
-// Índices para mejorar rendimiento
-ventaSchema.index({ numeroVenta: 1 });
-ventaSchema.index({ cliente: 1 });
-ventaSchema.index({ vendedor: 1 });
-ventaSchema.index({ estado: 1 });
-ventaSchema.index({ createdAt: -1 });
 
 const Venta = mongoose.model('Venta', ventaSchema);
 

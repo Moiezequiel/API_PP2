@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer');
 const archiver = require('archiver');
 const fs = require('fs');
 const path = require('path');
+const SignatureService = require('../services/signatureService');
 
 // Configurar transporter de correo (simulado para proyecto estudiantil)
 const transporter = nodemailer.createTransport({
@@ -528,12 +529,172 @@ const generarPDFSimulado = (dte) => {
   return Buffer.from(pdfContent, 'utf8');
 };
 
+// Validar firma digital de un DTE
+const validarFirmaDigital = async (req, res) => {
+  try {
+    const { dteId } = req.params;
+
+    const dte = await DTE.findById(dteId);
+    
+    if (!dte) {
+      return res.status(404).json({
+        success: false,
+        error: 'DTE no encontrado'
+      });
+    }
+
+    if (!dte.firmaDigital || !dte.firmaDigital.signature) {
+      return res.status(400).json({
+        success: false,
+        error: 'El DTE no tiene firma digital'
+      });
+    }
+
+    // Validar la firma usando el servicio
+    const validationResult = SignatureService.validateDigitalSignature(
+      dte.firmaDigital,
+      {
+        numeroDTE: dte.numeroDTE,
+        tipoDTE: dte.tipoDTE,
+        emisor: dte.emisor,
+        receptor: dte.receptor,
+        totales: dte.totales
+      }
+    );
+
+    res.json({
+      success: true,
+      data: {
+        dteId: dte._id,
+        numeroDTE: dte.numeroDTE,
+        validation: validationResult,
+        signatureInfo: {
+          signatureId: dte.firmaDigital.signatureId,
+          algorithm: dte.firmaDigital.algorithm,
+          keySize: dte.firmaDigital.keySize,
+          signedAt: dte.firmaDigital.fechaFirma,
+          validationCode: dte.firmaDigital.validationCode
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al validar firma digital:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al validar firma digital'
+    });
+  }
+};
+
+// Obtener certificados disponibles
+const obtenerCertificados = async (req, res) => {
+  try {
+    const certificates = SignatureService.getAvailableCertificates();
+    
+    res.json({
+      success: true,
+      data: certificates,
+      message: 'Certificados simulados disponibles'
+    });
+
+  } catch (error) {
+    console.error('Error al obtener certificados:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener certificados'
+    });
+  }
+};
+
+// Revocar certificado
+const revocarCertificado = async (req, res) => {
+  try {
+    const { nit } = req.params;
+
+    const result = SignatureService.revokeCertificate(nit);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        data: result,
+        message: 'Certificado revocado exitosamente'
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: result.message
+      });
+    }
+
+  } catch (error) {
+    console.error('Error al revocar certificado:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al revocar certificado'
+    });
+  }
+};
+
+// Simular cambio de estado de DTE
+const simularCambioEstado = async (req, res) => {
+  try {
+    const { dteId } = req.params;
+    const { nuevoEstado } = req.body;
+
+    const dte = await DTE.findById(dteId);
+    
+    if (!dte) {
+      return res.status(404).json({
+        success: false,
+        error: 'DTE no encontrado'
+      });
+    }
+
+    // Validar que el nuevo estado sea válido
+    const estadosValidos = ['Pendiente', 'Aceptado', 'Rechazado', 'Observado'];
+    if (!estadosValidos.includes(nuevoEstado)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Estado no válido'
+      });
+    }
+
+    const estadoAnterior = dte.estado;
+    dte.estado = nuevoEstado;
+    await dte.save();
+
+    res.json({
+      success: true,
+      data: {
+        dteId: dte._id,
+        numeroDTE: dte.numeroDTE,
+        estadoAnterior,
+        estadoNuevo: nuevoEstado,
+        fechaCambio: new Date()
+      },
+      message: 'Estado del DTE actualizado exitosamente'
+    });
+
+  } catch (error) {
+    console.error('Error al cambiar estado del DTE:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al cambiar estado del DTE'
+    });
+  }
+};
+
 module.exports = {
   obtenerDTEs,
   obtenerDTE,
   generarDTE,
   enviarDTE,
   anularDTE,
-  exportarDTEsZIP
+  exportarDTEsZIP,
+  validarFirmaDigital,
+  obtenerCertificados,
+  revocarCertificado,
+  simularCambioEstado
 };
 

@@ -109,15 +109,6 @@ const bitacoraSchema = new Schema({
   }
 });
 
-// Índices para mejorar rendimiento y consultas
-bitacoraSchema.index({ usuario: 1, timestamp: -1 });
-bitacoraSchema.index({ accion: 1, timestamp: -1 });
-bitacoraSchema.index({ endpoint: 1, timestamp: -1 });
-bitacoraSchema.index({ ip: 1, timestamp: -1 });
-bitacoraSchema.index({ exito: 1, timestamp: -1 });
-bitacoraSchema.index({ 'recurso.tipo': 1, 'recurso.id': 1 });
-bitacoraSchema.index({ timestamp: -1 });
-
 // Método estático para registrar acción
 bitacoraSchema.statics.registrarAccion = async function(datos) {
   const {

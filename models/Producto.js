@@ -94,12 +94,6 @@ productoSchema.methods.aumentarStock = function(cantidad) {
   this.cantidad += cantidad;
 };
 
-// Índices para mejorar rendimiento
-productoSchema.index({ codigo: 1 });
-productoSchema.index({ nombre: 'text', descripcion: 'text' });
-productoSchema.index({ categoria: 1 });
-productoSchema.index({ activo: 1 });
-
 const Producto = mongoose.model('Producto', productoSchema);
 
 module.exports = Producto;

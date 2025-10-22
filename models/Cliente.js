@@ -102,10 +102,6 @@ clienteSchema.methods.getDireccionCompleta = function() {
 };
 
 // Índices para mejorar rendimiento
-clienteSchema.index({ nit: 1 });
-clienteSchema.index({ email: 1 });
-clienteSchema.index({ nombre: 'text' });
-clienteSchema.index({ activo: 1 });
 
 const Cliente = mongoose.model('Cliente', clienteSchema);
 
